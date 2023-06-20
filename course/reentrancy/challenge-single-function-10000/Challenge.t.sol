@@ -15,8 +15,16 @@ contract ChallengeTest is Test {
     }
 
     function testExploit() public {
-        emit log_named_decimal_uint("player balance", playerAddress.balance, 18);
-        emit log_named_decimal_uint("vault balance", address(setup.vault()).balance, 18);
+        emit log_named_decimal_uint(
+            "player balance",
+            playerAddress.balance,
+            18
+        );
+        emit log_named_decimal_uint(
+            "vault balance",
+            address(setup.vault()).balance,
+            18
+        );
 
         vm.startPrank(playerAddress, playerAddress);
 
@@ -27,11 +35,23 @@ contract ChallengeTest is Test {
         assertTrue(setup.isSolved(), "challenge not solved");
         vm.stopPrank();
 
-        emit log_named_decimal_uint("player balance", playerAddress.balance, 18);
-        emit log_named_decimal_uint("vault balance", address(setup.vault()).balance, 18);
+        emit log_named_decimal_uint(
+            "player balance",
+            playerAddress.balance,
+            18
+        );
+        emit log_named_decimal_uint(
+            "vault balance",
+            address(setup.vault()).balance,
+            18
+        );
     }
 }
 
 ////////// YOUR CODE GOES HERE //////////
+
+contract Exploit {
+
+}
 
 ////////// YOUR CODE END //////////
