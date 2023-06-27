@@ -9,3 +9,5 @@ course/**/*Solution.t.sol
 .github/workflows/test.yml
 cache
 out
+
+.env
