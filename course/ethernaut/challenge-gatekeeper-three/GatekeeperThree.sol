@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "forge-std/console.sol";
+
 contract SimpleTrick {
     GatekeeperThree public target;
     address public trick;
@@ -43,16 +45,21 @@ contract GatekeeperThree {
     modifier gateOne() {
         require(msg.sender == owner);
         require(tx.origin != owner);
+
         _;
     }
 
     modifier gateTwo() {
         require(allowEntrance == true);
+
         _;
     }
 
     modifier gateThree() {
-        if (address(this).balance > 0.001 ether && payable(owner).send(0.001 ether) == false) {
+        if (
+            address(this).balance > 0.001 ether &&
+            payable(owner).send(0.001 ether) == false
+        ) {
             _;
         }
     }
