@@ -5,7 +5,10 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MintableERC20 is ERC20, Ownable {
-    constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
+    constructor(
+        string memory name_,
+        string memory symbol_
+    ) ERC20(name_, symbol_) {}
 
     function mint(address account, uint256 amount) external onlyOwner {
         _mint(account, amount);
@@ -21,7 +24,11 @@ contract AMM {
         tokenB = ERC20(tokenBAddress);
     }
 
-    function swap(address tokenInAddress, address tokenOutAddress, uint256 amountIn) external {
+    function swap(
+        address tokenInAddress,
+        address tokenOutAddress,
+        uint256 amountIn
+    ) external {
         ERC20 tokenIn = ERC20(tokenInAddress);
         ERC20 tokenOut = ERC20(tokenOutAddress);
         require(tokenIn == tokenA || tokenIn == tokenB, "invalid tokenIn");
@@ -29,7 +36,10 @@ contract AMM {
         require(tokenIn != tokenOut, "tokenIn == tokenOut");
         uint256 balanceIn = tokenIn.balanceOf(address(this));
         uint256 balanceOut = tokenOut.balanceOf(address(this));
-        uint256 amountOut = balanceOut - balanceIn * balanceOut * 1000 / (balanceIn + amountIn) / 997; // 0.3% fee
+        uint256 amountOut = balanceOut -
+            (balanceIn * balanceOut * 1000) /
+            (balanceIn + amountIn) /
+            997; // 0.3% fee
         tokenIn.transferFrom(msg.sender, address(this), amountIn);
         tokenOut.transfer(msg.sender, amountOut);
     }
@@ -41,7 +51,11 @@ contract LendingPool {
     AMM public immutable amm;
     mapping(address => mapping(address => int256)) public deposits;
 
-    constructor(address tokenAAddress, address tokenBAddress, address ammAddress) {
+    constructor(
+        address tokenAAddress,
+        address tokenBAddress,
+        address ammAddress
+    ) {
         tokenA = ERC20(tokenAAddress);
         tokenB = ERC20(tokenBAddress);
         amm = AMM(ammAddress);
@@ -62,14 +76,22 @@ contract LendingPool {
         require(token == tokenA || token == tokenB, "invalid asset");
         if (token == tokenA) {
             require(
-                deposits[address(tokenB)][msg.sender] * int256(tokenA.balanceOf(address(amm))) * 3
-                    >= (int256(amount) + -deposits[asset][msg.sender]) * int256(tokenB.balanceOf(address(amm))) * 4,
+                deposits[address(tokenB)][msg.sender] *
+                    int256(tokenA.balanceOf(address(amm))) *
+                    3 >=
+                    (int256(amount) + -deposits[asset][msg.sender]) *
+                        int256(tokenB.balanceOf(address(amm))) *
+                        4,
                 "insufficient deposit"
             );
         } else {
             require(
-                deposits[address(tokenA)][msg.sender] * int256(tokenB.balanceOf(address(amm))) * 3
-                    >= (int256(amount) + -deposits[asset][msg.sender]) * int256(tokenA.balanceOf(address(amm))) * 4,
+                deposits[address(tokenA)][msg.sender] *
+                    int256(tokenB.balanceOf(address(amm))) *
+                    3 >=
+                    (int256(amount) + -deposits[asset][msg.sender]) *
+                        int256(tokenA.balanceOf(address(amm))) *
+                        4,
                 "insufficient deposit"
             );
         }
@@ -93,7 +115,11 @@ contract Setup {
         amm = new AMM(address(tokenA), address(tokenB));
         tokenA.mint(address(amm), 20_000_000 ether);
         tokenB.mint(address(amm), 10_000 ether);
-        lendingPool = new LendingPool(address(tokenA), address(tokenB), address(amm));
+        lendingPool = new LendingPool(
+            address(tokenA),
+            address(tokenB),
+            address(amm)
+        );
         tokenA.mint(address(lendingPool), 900_000 ether);
     }
 
@@ -104,6 +130,8 @@ contract Setup {
     }
 
     function isSolved() public view returns (bool) {
-        return tokenA.balanceOf(msg.sender) >= (9_100_000 ether) && tokenA.balanceOf(address(lendingPool)) == 0;
+        return
+            tokenA.balanceOf(msg.sender) >= (9_100_000 ether) &&
+            tokenA.balanceOf(address(lendingPool)) == 0;
     }
 }
