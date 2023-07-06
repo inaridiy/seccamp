@@ -13,7 +13,11 @@ contract AMM {
         tokenB = ERC20(tokenBAddress);
     }
 
-    function swap(address tokenInAddress, address tokenOutAddress, uint256 amountIn) external {
+    function swap(
+        address tokenInAddress,
+        address tokenOutAddress,
+        uint256 amountIn
+    ) external {
         ERC20 tokenIn = ERC20(tokenInAddress);
         ERC20 tokenOut = ERC20(tokenOutAddress);
         require(tokenIn == tokenA || tokenIn == tokenB, "invalid tokenIn");
@@ -21,7 +25,10 @@ contract AMM {
         require(tokenIn != tokenOut, "tokenIn == tokenOut");
         uint256 balanceIn = tokenIn.balanceOf(address(this));
         uint256 balanceOut = tokenOut.balanceOf(address(this));
-        uint256 amountOut = balanceOut - balanceIn * balanceOut * 1000 / (balanceIn + amountIn) / 997; // 0.3% fee
+        uint256 amountOut = balanceOut -
+            (balanceIn * balanceOut * 1000) /
+            (balanceIn + amountIn) /
+            997; // 0.3% fee
         tokenIn.transferFrom(msg.sender, address(this), amountIn);
         tokenOut.transfer(msg.sender, amountOut);
     }
@@ -33,7 +40,11 @@ contract LendingPool {
     AMM public immutable amm;
     mapping(address => mapping(address => int256)) public deposits;
 
-    constructor(address tokenAAddress, address tokenBAddress, address ammAddress) {
+    constructor(
+        address tokenAAddress,
+        address tokenBAddress,
+        address ammAddress
+    ) {
         tokenA = ERC20(tokenAAddress);
         tokenB = ERC20(tokenBAddress);
         amm = AMM(ammAddress);
@@ -54,14 +65,22 @@ contract LendingPool {
         require(token == tokenA || token == tokenB, "invalid asset");
         if (token == tokenA) {
             require(
-                deposits[address(tokenB)][msg.sender] * int256(tokenA.balanceOf(address(amm))) * 3
-                    >= (int256(amount) + -deposits[asset][msg.sender]) * int256(tokenB.balanceOf(address(amm))) * 4,
+                deposits[address(tokenB)][msg.sender] *
+                    int256(tokenA.balanceOf(address(amm))) *
+                    3 >=
+                    (int256(amount) + -deposits[asset][msg.sender]) *
+                        int256(tokenB.balanceOf(address(amm))) *
+                        4,
                 "insufficient deposit"
             );
         } else {
             require(
-                deposits[address(tokenA)][msg.sender] * int256(tokenB.balanceOf(address(amm))) * 3
-                    >= (int256(amount) + -deposits[asset][msg.sender]) * int256(tokenA.balanceOf(address(amm))) * 4,
+                deposits[address(tokenA)][msg.sender] *
+                    int256(tokenB.balanceOf(address(amm))) *
+                    3 >=
+                    (int256(amount) + -deposits[asset][msg.sender]) *
+                        int256(tokenA.balanceOf(address(amm))) *
+                        4,
                 "insufficient deposit"
             );
         }
@@ -91,11 +110,17 @@ contract Setup {
         amm = new AMM(address(tokenA), address(tokenB));
         tokenA.transfer(address(amm), 20_000_000 * tokenAUnit);
         tokenB.transfer(address(amm), 10_000 * tokenBUnit);
-        lendingPool = new LendingPool(address(tokenA), address(tokenB), address(amm));
+        lendingPool = new LendingPool(
+            address(tokenA),
+            address(tokenB),
+            address(amm)
+        );
         tokenA.transfer(address(lendingPool), 900_000 * tokenAUnit);
     }
 
     function isSolved() public view returns (bool) {
-        return tokenA.balanceOf(msg.sender) >= (100_000 * tokenAUnit) && tokenA.balanceOf(address(lendingPool)) == 0;
+        return
+            tokenA.balanceOf(msg.sender) >= (100_000 * tokenAUnit) &&
+            tokenA.balanceOf(address(lendingPool)) == 0;
     }
 }
