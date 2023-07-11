@@ -34,7 +34,8 @@ contract TokenTest is Test {
         assertEq(token.balanceOf(bob), 300);
 
         vm.prank(alice);
-        assertFalse(token.transfer(bob, 101));
+        vm.expectRevert();
+        token.transfer(bob, 101);
         assertEq(token.balanceOf(alice), 100);
     }
 
@@ -75,7 +76,8 @@ contract TokenTest is Test {
         assertTrue(token.approve(charlie, 100));
         assertEq(token.allowance(alice, charlie), 100);
         vm.prank(bob);
-        assertFalse(token.transferFrom(alice, bob, 100));
+        vm.expectRevert();
+        token.transferFrom(alice, bob, 100);
         vm.prank(charlie);
         assertTrue(token.transferFrom(alice, bob, 100));
         assertEq(token.balanceOf(alice), 0);
@@ -91,6 +93,10 @@ contract TokenTest is Test {
         vm.prank(bob);
         assertTrue(token.transferFrom(alice, bob, 100));
         assertEq(token.balanceOf(alice), 900);
-        assertEq(token.allowance(alice, bob), type(uint256).max, "allowance must not change");
+        assertEq(
+            token.allowance(alice, bob),
+            type(uint256).max,
+            "allowance must not change"
+        );
     }
 }
