@@ -1,0 +1,12 @@
+// See https://containers.dev/implementors/json_reference/ for configuration reference
+{
+	"name": "Untitled Node.js project",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"remoteUser": "node",
+	"features": {
+		"ghcr.io/devcontainers/features/rust:1": {}
+	},
+	"postCreateCommand": "curl -L get.huff.sh | bash && curl -L https://foundry.paradigm.xyz | bash && /home/node/.huff/bin/huffup && /home/node/.foundry/bin/foundryup"
+}
