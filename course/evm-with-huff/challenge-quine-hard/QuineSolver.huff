@@ -1,5 +1,5 @@
 #define macro MAIN() = takes (0) returns (0) {
     ////////// YOUR CODE GOES HERE //////////
-
+    retrun
     ////////// YOUR CODE END //////////
 }

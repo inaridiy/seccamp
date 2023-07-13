@@ -1,5 +1,11 @@
 #define macro MAIN() = takes (0) returns (0) {
     ////////// YOUR CODE GOES HERE //////////
-
+    codesize
+    0x00
+    0x00
+    codecopy
+    codesize
+    0x00
+    return
     ////////// YOUR CODE END //////////
 }

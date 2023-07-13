@@ -1,5 +1,14 @@
 #define macro MAIN() = takes (0) returns (0) {
     ////////// YOUR CODE GOES HERE //////////
-
+    0x02            // [0x02]
+    0x00            // [0x00, 0x02]
+    calldataload    // [x, 0x02]
+    mod             // [x % 2]
+    iszero          // [x is even]
+    0x00            // [0x00, x is even]
+    mstore          // []
+    msize           // [0x20]
+    0x00            // [0x00, 0x20]
+    return          // []
     ////////// YOUR CODE END //////////
 }
