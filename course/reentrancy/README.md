@@ -335,7 +335,8 @@ Single-Function Reentrancy Attack で扱った`Vault`コントラクトと似て
 そのため、残高を他のアドレスに避難させることで、攻撃者はデポジットした額より大きな額を引き出すことが可能です。
 このように、同じ状態（この例では`balanceOf`）を共有する異なる関数を入れ子（この例では`withdrawAll` -> `transfer`）に呼び出す攻撃を Cross-Function Reentrancy Attack と呼びます。
 
-図に表すと次のようになります。
+攻撃の一例を、図に表すと次のようになります。
+`Attacker`と`AttackerSub`はそれぞれ別のコントラクトと捉えてください。
 
 ```mermaid
 sequenceDiagram
@@ -351,17 +352,18 @@ sequenceDiagram
 	Vault -->>- Attacker: (transfer終了)
 	Attacker -->>- Vault: (送金終了)
 	Vault -->>- Attacker: (withdrawAll終了)
+	Attacker ->>+ AttackerSub: withdrawAllを指示
 	AttackerSub ->>+ Vault: withdrawAll
 	Vault ->>+ AttackerSub: 送金
 	AttackerSub -->>- Vault: (送金終了)
 	Vault -->>- AttackerSub: (withdrawAll終了)
 	AttackerSub ->>+ Attacker: 送金
 	Attacker -->>- AttackerSub: (送金終了)
-	Attacker ->>+ Vault: withdrawAll
-	Vault ->>+ Attacker: 送金
-	Attacker -->>- Vault: (送金終了)
-	Vault -->>- Attacker: (withdrawAll終了)
+	AttackerSub -->>- Attacker: (withdrawAllの指示終了)
 ```
+
+この例とは別に、`AttackerSub`が`withdrawAll`ではなく`transfer`を呼び出すパターンも考えられます。
+ぜひ考えてみてください。
 
 この攻撃への対策は、Checks-Effects-Interactions パターンに従うことです。
 また、最悪従っていなくても`ReentrancyGuard`を適切に適用させていれば、この攻撃は防げます。
@@ -469,6 +471,7 @@ sequenceDiagram
 	Vault ->>+ VaultToken: burnAccount
 	VaultToken -->>- Vault: (burnAccount終了)
 	Vault -->>- Attacker: (withdrawAll終了)
+	Attacker ->>+ AttackerSub: withdrawAllを指示
 	AttackerSub ->>+ Vault: withdrawAll
 	Vault ->>+ AttackerSub: 送金
 	AttackerSub -->>- Vault: (送金終了)
@@ -477,10 +480,7 @@ sequenceDiagram
 	Vault -->>- AttackerSub: (withdrawAll終了)
 	AttackerSub ->>+ Attacker: 送金
 	Attacker -->>- AttackerSub: (送金終了)
-	Attacker ->>+ Vault: withdrawAll
-	Vault ->>+ Attacker: 送金
-	Attacker -->>- Vault: (送金終了)
-	Vault -->>- Attacker: (withdrawAll終了)
+	AttackerSub -->>- Attacker: (withdrawAllの指示終了)
 ```
 
 以上のように、Reentrancy Guard を適用するだけでは Reentrancy Attack の対策として不十分であるケースが多々あります。
